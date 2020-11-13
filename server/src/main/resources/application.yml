@@ -1,0 +1,77 @@
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/views/
+      suffix: .jsp
+
+  servlet:
+    multipart:
+      max-request-size: 20MB
+      max-file-size: 10MB
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  redis:
+    host: localhost
+    port: 6379
+    #    password:
+
+  rabbitmq:
+    virtual-host: /vote
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    listener:
+      simple:
+        concurrency: 5
+        max-concurrency: 15
+        prefetch: 10
+
+  mail:
+    host: smtp.qq.com
+    username: 419089660@qq.com
+    password: mdyrphgakyvxbjdi
+    properties:
+      mail:
+        stmp:
+          auth: true
+          startttls:
+            enabled: true
+            required: true
+
+datasource:
+  url: jdbc:mysql://127.0.0.1:3306/kill?useUnicode=true&characterEncoding=UTF8&useSSL=false&serverTimezone=Asia/Shanghai
+  username: root
+  password: root
+
+mybatis:
+  config-location: classpath:mybatis-config.xml
+  check-config-location: true
+  mapper-locations: classpath:mappers/*.xml
+
+redis:
+  config:
+    host: redis://127.0.0.1:6379
+
+mq:
+  env: test
+  vote:
+    success:
+      subject: 投票成功！
+      content: 您好，您已经抢购到商品：<strong style="color">%s</strong>，复制该链接并在浏览器采用新的页面打开，即可查看投票情况：${system.domain}/kill/record/detail/%s，祝您生活愉快！
+
+      email:
+        queue: ${mq.env}.vote.success.email.queue
+        exchange: ${mq.env}.vote.success.email.exchange
+        routing-key: ${mq.env}.vote.success.email.routing-key
+        expire: 180000
+
+    dead:
+        queue: ${mq.env}.vote.success.dead.queue
+        exchange: ${mq.env}.vote.success.dead.exchange
+        routing-key: ${mq.env}.vote.success.dead.routing-key
+
+system:
+  domain: http://localhost:8088/kill
