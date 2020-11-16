@@ -29,6 +29,7 @@ spring:
         max-concurrency: 15
         prefetch: 10
 
+
   mail:
     host: smtp.qq.com
     username: 419089660@qq.com
@@ -54,6 +55,13 @@ mybatis:
 redis:
   config:
     host: redis://127.0.0.1:6379
+
+logging:
+  config: classpath:log4j2.xml
+  level:
+    root: error
+    com.fredy.vote.server.controller: debug
+    com.fredy.vote.model.mapper: debug
 
 mq:
   env: test
