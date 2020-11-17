@@ -21,7 +21,7 @@ public class HelloController {
 
     @GetMapping("/hello2")
     @ResponseBody
-    public BaseResponse<String> hello2 () {
-        return new BaseResponse<>(StatusCode.Success);
+    public BaseResponse hello2 () {
+        return new BaseResponse(StatusCode.SUCCESS);
     }
 }

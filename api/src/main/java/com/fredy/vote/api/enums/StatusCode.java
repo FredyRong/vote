@@ -11,10 +11,12 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 public enum StatusCode {
-    Success(200, "成功！"),
-    Fail(-1, "未知错误"),
-    InvalidParams(201, "非法的参数！"),
-    UserNotLogin(202, "用户未登录！"),
+    SUCCESS(200, "成功！"),
+    FAIL(-1, "未知错误"),
+    SYSTEM_ERROR(500, "系统错误，请联系管理员"),
+    INVALID_PARAMS(501, "非法的参数！"),
+    USER_NOT_LOGIN_IN(502, "用户未登录！"),
+    VOTE_THEME_ADD_FAILED(503, "添加投票主题失败！"),
     ;
 
     @Getter
