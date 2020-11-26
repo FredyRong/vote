@@ -7,7 +7,6 @@
     <id column="vote_theme_option_id" jdbcType="INTEGER" property="voteThemeOptionId" />
     <result column="id" jdbcType="VARCHAR" property="id" />
     <result column="ip" jdbcType="VARCHAR" property="ip" />
-    <result column="choice" jdbcType="VARCHAR" property="choice" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   <sql id="Example_Where_Clause">
@@ -69,7 +68,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    user_id, vote_theme_id, vote_theme_option_id, id, ip, choice, create_time
+    user_id, vote_theme_id, vote_theme_option_id, id, ip, create_time
   </sql>
   <select id="selectByExample" parameterType="com.fredy.vote.model.entity.UserVoteDetailExample" resultMap="BaseResultMap">
     select
@@ -107,10 +106,10 @@
   </delete>
   <insert id="insert" parameterType="com.fredy.vote.model.entity.UserVoteDetail">
     insert into user_vote_detail (user_id, vote_theme_id, vote_theme_option_id, 
-      id, ip, choice, create_time
+      id, ip, create_time
       )
     values (#{userId,jdbcType=INTEGER}, #{voteThemeId,jdbcType=INTEGER}, #{voteThemeOptionId,jdbcType=INTEGER}, 
-      #{id,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR}, #{choice,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
+      #{id,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
       )
   </insert>
   <insert id="insertSelective" parameterType="com.fredy.vote.model.entity.UserVoteDetail">
@@ -131,9 +130,6 @@
       <if test="ip != null">
         ip,
       </if>
-      <if test="choice != null">
-        choice,
-      </if>
       <if test="createTime != null">
         create_time,
       </if>
@@ -153,9 +149,6 @@
       </if>
       <if test="ip != null">
         #{ip,jdbcType=VARCHAR},
-      </if>
-      <if test="choice != null">
-        #{choice,jdbcType=VARCHAR},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
@@ -186,9 +179,6 @@
       <if test="record.ip != null">
         ip = #{record.ip,jdbcType=VARCHAR},
       </if>
-      <if test="record.choice != null">
-        choice = #{record.choice,jdbcType=VARCHAR},
-      </if>
       <if test="record.createTime != null">
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
       </if>
@@ -204,7 +194,6 @@
       vote_theme_option_id = #{record.voteThemeOptionId,jdbcType=INTEGER},
       id = #{record.id,jdbcType=VARCHAR},
       ip = #{record.ip,jdbcType=VARCHAR},
-      choice = #{record.choice,jdbcType=VARCHAR},
       create_time = #{record.createTime,jdbcType=TIMESTAMP}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -219,9 +208,6 @@
       <if test="ip != null">
         ip = #{ip,jdbcType=VARCHAR},
       </if>
-      <if test="choice != null">
-        choice = #{choice,jdbcType=VARCHAR},
-      </if>
       <if test="createTime != null">
         create_time = #{createTime,jdbcType=TIMESTAMP},
       </if>
@@ -234,7 +220,6 @@
     update user_vote_detail
     set id = #{id,jdbcType=VARCHAR},
       ip = #{ip,jdbcType=VARCHAR},
-      choice = #{choice,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP}
     where user_id = #{userId,jdbcType=INTEGER}
       and vote_theme_id = #{voteThemeId,jdbcType=INTEGER}

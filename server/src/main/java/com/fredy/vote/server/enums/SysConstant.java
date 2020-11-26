@@ -1,4 +1,4 @@
-package com.fredy.vote.model.enums;
+package com.fredy.vote.server.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +20,24 @@ public class SysConstant {
         private Integer code;
         @Getter
         private String msg;
+
+        @Override
+        public String toString() {
+            return String.valueOf(getCode());
+        }
+    }
+
+    @AllArgsConstructor
+    public enum VoteThemeSelectType {
+        SELECT(1, "单选"),
+        CHECK_BOX(2, "多选")
+        ;
+
+        @Getter
+        private Integer code;
+        @Getter
+        private String msg;
+
 
         @Override
         public String toString() {

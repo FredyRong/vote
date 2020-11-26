@@ -45,20 +45,20 @@
             <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
 
-        <table tableName="user" domainObjectName="User">
-            <generatedKey column="id" sqlStatement="Mysql"/>
-            <columnOverride column="type" javaType="Integer"/>
-        </table>
+<!--        <table tableName="user" domainObjectName="User">-->
+<!--            <generatedKey column="id" sqlStatement="Mysql"/>-->
+<!--            <columnOverride column="type" javaType="Integer"/>-->
+<!--        </table>-->
 
-        <table tableName="vote_theme" domainObjectName="VoteTheme">
-            <generatedKey column="id" sqlStatement="Mysql"/>
-            <columnOverride column="select_type" javaType="Integer"/>
-            <columnOverride column="status" javaType="Integer"/>
-        </table>
+<!--        <table tableName="vote_theme" domainObjectName="VoteTheme">-->
+<!--            <generatedKey column="id" sqlStatement="Mysql"/>-->
+<!--            <columnOverride column="select_type" javaType="Integer"/>-->
+<!--            <columnOverride column="status" javaType="Integer"/>-->
+<!--        </table>-->
 
-        <table tableName="vote_theme_option" domainObjectName="VoteThemeOption">
-            <generatedKey column="id" sqlStatement="Mysql"/>
-        </table>
+<!--        <table tableName="vote_theme_option" domainObjectName="VoteThemeOption">-->
+<!--            <generatedKey column="id" sqlStatement="Mysql"/>-->
+<!--        </table>-->
 
         <table tableName="user_vote_detail" domainObjectName="UserVoteDetail"></table>
     </context>

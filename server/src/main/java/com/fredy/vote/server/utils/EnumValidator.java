@@ -1,6 +1,6 @@
-package com.fredy.vote.model.utils;
+package com.fredy.vote.server.utils;
 
-import com.fredy.vote.model.annotation.EnumValid;
+import com.fredy.vote.server.annotation.EnumValid;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

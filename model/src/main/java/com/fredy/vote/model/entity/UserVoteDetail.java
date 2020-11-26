@@ -1,6 +1,8 @@
 package com.fredy.vote.model.entity;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -21,9 +23,6 @@ public class UserVoteDetail implements Serializable {
 
     // ip地址
     private String ip;
-
-    // 投票结果
-    private String choice;
 
     // 创建时间
     private LocalDateTime createTime;

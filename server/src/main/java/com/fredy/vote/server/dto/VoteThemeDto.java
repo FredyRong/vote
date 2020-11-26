@@ -1,8 +1,9 @@
-package com.fredy.vote.model.dto;
+package com.fredy.vote.server.dto;
 
-import com.fredy.vote.model.enums.SysConstant;
-import com.fredy.vote.model.annotation.EnumValid;
+import com.fredy.vote.server.enums.SysConstant;
+import com.fredy.vote.server.annotation.EnumValid;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -17,6 +18,8 @@ import java.util.Map;
 @Data
 public class VoteThemeDto {
 
+    private Integer id;
+
     // 标题
     @NotBlank(message = "标题不能为空")
     private String title;
@@ -26,7 +29,7 @@ public class VoteThemeDto {
     private String description;
 
     // 选项类型，1：单选 2：多选
-    @NotNull(message = "选项类型不能为空")
+    @EnumValid(target = SysConstant.VoteThemeSelectType.class, message = "选项类型错误")
     private Integer selectType;
 
     // 状态，0：已删除 1：已过期 2：暂停 3：启用
@@ -34,14 +37,19 @@ public class VoteThemeDto {
     private Integer status;
 
     // 投票开始时间
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull(message = "投票开始时间不能为空")
     private LocalDateTime startTime;
 
     // 投票结束时间
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull(message = "投票结束时间不能为空")
     private LocalDateTime endTime;
 
-    // 选项
+    // 选项 key: value value：label
     @NotEmpty(message = "选项不能为空")
-    private Map<Integer, String> options;
+    private Map<String, String> options;
+
+    // 投票数 key: value value: total
+    private Map<String, Long> voteNumbers;
 }
