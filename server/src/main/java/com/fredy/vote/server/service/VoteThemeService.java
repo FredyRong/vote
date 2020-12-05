@@ -1,10 +1,10 @@
 package com.fredy.vote.server.service;
 
+import com.fredy.vote.server.dto.UserVoteDetailDto;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
 import com.github.pagehelper.PageInfo;
 
-import java.util.List;
 
 /**
  * @author Fredy
@@ -19,4 +19,6 @@ public interface VoteThemeService {
     PageInfo getVoteThemeList(Integer pageNo, Integer pageSize, String filed, String direction);
 
     void vote(VoteDto voteDto, String ip);
+
+    UserVoteDetailDto getSpecificUserVoteDetail(Integer userId, Integer voteThemeId);
 }

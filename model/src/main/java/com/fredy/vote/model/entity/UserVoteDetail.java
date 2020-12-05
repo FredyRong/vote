@@ -1,8 +1,6 @@
 package com.fredy.vote.model.entity;
 
-import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

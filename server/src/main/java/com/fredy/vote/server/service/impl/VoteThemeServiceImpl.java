@@ -5,10 +5,12 @@ import com.fredy.vote.api.enums.StatusCode;
 import com.fredy.vote.model.entity.*;
 import com.fredy.vote.model.mapper.UserVoteDetailMapper;
 import com.fredy.vote.model.mapper.VoteThemeOptionExtMapper;
+import com.fredy.vote.server.dto.UserVoteDetailDto;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
 import com.fredy.vote.model.mapper.VoteThemeMapper;
 import com.fredy.vote.model.mapper.VoteThemeOptionMapper;
+import com.fredy.vote.server.enums.SysConstant;
 import com.fredy.vote.server.service.VoteThemeService;
 import com.fredy.vote.server.utils.SnowFlake;
 import com.github.pagehelper.PageHelper;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +154,13 @@ public class VoteThemeServiceImpl implements VoteThemeService {
     @Override
     @Transactional
     public void vote(VoteDto voteDto, String ip) {
+        VoteTheme voteTheme = voteThemeMapper.selectByPrimaryKey(voteDto.getVoteThemeId());
+
+        // 判断所投票选项是否符合单选
+        if(voteTheme.getSelectType() == SysConstant.VoteThemeSelectType.SELECT.getCode() && voteDto.getOptionValue().size() != 1) {
+            throw new CustomizeException(StatusCode.INVALID_PARAMS);
+        }
+
         List<UserVoteDetail> userVoteDetailList = null;
 
         // 判断用户是否重复投票
@@ -206,6 +216,43 @@ public class VoteThemeServiceImpl implements VoteThemeService {
                 throw new CustomizeException(StatusCode.VOTE_FAILED);
             }
         });
+    }
 
+
+    /**
+     * @Description: 获取特定的用户投票详情
+     * @Author: Fredy
+     * @Date: 2020-11-30
+     */
+    @Override
+    public UserVoteDetailDto getSpecificUserVoteDetail(Integer userId, Integer voteThemeId) {
+        UserVoteDetailExample userVoteDetailExample = new UserVoteDetailExample();
+        userVoteDetailExample.createCriteria()
+                .andUserIdEqualTo(userId)
+                .andVoteThemeIdEqualTo(voteThemeId);
+        List<UserVoteDetail> voteDetailList = userVoteDetailMapper.selectByExample(userVoteDetailExample);
+
+        if(voteDetailList.size() == 0) {
+            throw new CustomizeException(StatusCode.USER_VOTE_DETAIL_NOT_EXIST);
+        }
+
+        UserVoteDetailDto userVoteDetailDto = new UserVoteDetailDto();
+        userVoteDetailDto.setUserId(userId);
+
+        // 查询投票主题
+        VoteTheme voteTheme = voteThemeMapper.selectByPrimaryKey(voteDetailList.get(0).getVoteThemeId());
+        VoteThemeDto voteThemeDto = new VoteThemeDto();
+        BeanUtils.copyProperties(voteTheme, voteThemeDto);
+        userVoteDetailDto.setVoteTheme(voteThemeDto);
+
+        // 查询所投票的选项
+        List<VoteThemeOption> voteThemeOptionList = new ArrayList<>();
+        voteDetailList.stream().forEach(e -> {
+            VoteThemeOption voteThemeOption = voteThemeOptionMapper.selectByPrimaryKey(e.getVoteThemeOptionId(), e.getVoteThemeId());
+            voteThemeOptionList.add(voteThemeOption);
+        });
+        userVoteDetailDto.setVoteThemeOptionList(voteThemeOptionList);
+
+        return userVoteDetailDto;
     }
 }

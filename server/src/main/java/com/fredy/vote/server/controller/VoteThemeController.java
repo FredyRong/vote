@@ -3,11 +3,11 @@ package com.fredy.vote.server.controller;
 import com.fredy.vote.api.Exception.CustomizeException;
 import com.fredy.vote.api.enums.StatusCode;
 import com.fredy.vote.api.response.BaseResponse;
+import com.fredy.vote.server.dto.UserVoteDetailDto;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
 import com.fredy.vote.server.service.VoteThemeService;
 import com.fredy.vote.server.utils.IpUtil;
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Min;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -112,5 +110,20 @@ public class VoteThemeController {
         voteThemeService.vote(voteDto, ip);
 
         return new BaseResponse(StatusCode.SUCCESS);
+    }
+
+
+    /**
+     * @Description: 获取特定的用户投票详情
+     * @Author: Fredy
+     * @Date: 2020-11-30
+     */
+    @GetMapping("/user/detail/{voteThemeId:[1-9]\\d*}")
+    public BaseResponse getSpecificUserVoteDetail(@PathVariable Integer voteThemeId) {
+        Integer userId = 1; // 暂时写死
+
+        UserVoteDetailDto specificUserVoteDetail = voteThemeService.getSpecificUserVoteDetail(userId, voteThemeId);
+
+        return new BaseResponse(StatusCode.SUCCESS, specificUserVoteDetail);
     }
 }

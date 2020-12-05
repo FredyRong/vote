@@ -23,7 +23,8 @@ public enum StatusCode {
     VOTE_DUPLICATE(507, "不能重复投票！"),
     VOTE_THEME_OPTION_NOT_EXIST(508, "不存在该投票选项！"),
     USER_VOTE_DETAIL_ADD_FAILED(509,"添加用户投票信息失败！"),
-    VOTE_FAILED(510,"投票失败！")
+    VOTE_FAILED(510,"投票失败！"),
+    USER_VOTE_DETAIL_NOT_EXIST(511, "不存在该用户投票信息！")
     ;
 
     @Getter
