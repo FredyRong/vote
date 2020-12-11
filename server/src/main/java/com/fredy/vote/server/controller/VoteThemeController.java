@@ -11,8 +11,11 @@ import com.fredy.vote.server.utils.IpUtil;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -26,19 +29,18 @@ import java.util.stream.Collectors;
  */
 @Controller
 @RequestMapping("/theme")
-@ResponseBody
 @Log4j2
 public class VoteThemeController {
 
     @Resource
     private VoteThemeService voteThemeService;
 
-
     /**
      * @Description: 添加投票主题
      * @Author: Fredy
      * @Date: 2020-11-23
      */
+    @ResponseBody
     @PostMapping("/add")
     public BaseResponse addVoteTheme(@Valid @RequestBody VoteThemeDto dto, BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
@@ -56,36 +58,17 @@ public class VoteThemeController {
      * @Description: 获取单个投票主题信息
      * @Author: Fredy
      * @Date: 2020-11-23
-     */ 
+     */
     @GetMapping("/{id:[1-9]\\d*}")
-    public BaseResponse getVoteTheme(@PathVariable Integer id) {
+    public String getVoteTheme(@PathVariable Integer id, Model model) {
         if (id == null) {
             throw new CustomizeException(StatusCode.INVALID_PARAMS);
         }
 
         VoteThemeDto voteThemeDto = voteThemeService.getVoteTheme(id);
+        model.addAttribute("VoteTheme", voteThemeDto);
 
-        return new BaseResponse(StatusCode.SUCCESS, voteThemeDto);
-    }
-
-
-    /**
-     * @Description: 获取按(时间)排序的投票主题list
-     * @Author: Fredy
-     * @Date: 2020-11-24
-     */
-    @GetMapping("/list")
-    public BaseResponse getVoteThemeList(@RequestParam(defaultValue = "1") Integer pageNo,
-                                         @RequestParam(defaultValue = "5") Integer pageSize,
-                                         @RequestParam(defaultValue = "update_time") String filed,
-                                         @RequestParam(defaultValue = "desc") String direction) {
-        if (pageNo <= 0 || pageSize <= 0 || (!direction.equals("asc") && !direction.equals("desc"))) {
-            throw new CustomizeException(StatusCode.INVALID_PARAMS);
-        }
-
-        PageInfo voteThemeDtoPageInfo = voteThemeService.getVoteThemeList(pageNo, pageSize, filed, direction);
-
-        return new BaseResponse(StatusCode.SUCCESS, voteThemeDtoPageInfo);
+        return "item";
     }
 
 
@@ -94,6 +77,7 @@ public class VoteThemeController {
      * @Author: Fredy
      * @Date: 2020-11-26
      */
+    @ResponseBody
     @PostMapping("/vote")
     public BaseResponse vote(@Valid @RequestBody VoteDto voteDto, BindingResult bindingResult, HttpServletRequest request) {
         if (bindingResult.hasErrors()) {
@@ -119,11 +103,12 @@ public class VoteThemeController {
      * @Date: 2020-11-30
      */
     @GetMapping("/user/detail/{voteThemeId:[1-9]\\d*}")
-    public BaseResponse getSpecificUserVoteDetail(@PathVariable Integer voteThemeId) {
+    public String getSpecificUserVoteDetail(@PathVariable Integer voteThemeId, Model model) {
         Integer userId = 1; // 暂时写死
 
         UserVoteDetailDto specificUserVoteDetail = voteThemeService.getSpecificUserVoteDetail(userId, voteThemeId);
+        model.addAttribute("SpecificUserVoteDetail", specificUserVoteDetail);
 
-        return new BaseResponse(StatusCode.SUCCESS, specificUserVoteDetail);
+        return "detail";
     }
 }

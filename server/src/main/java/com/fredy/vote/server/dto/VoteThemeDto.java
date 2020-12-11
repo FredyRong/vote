@@ -52,4 +52,7 @@ public class VoteThemeDto {
 
     // 投票数 key: value value: total
     private Map<String, Long> voteNumbers;
+
+    // 是否能投票
+    private Boolean canVote;
 }

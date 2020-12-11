@@ -3,13 +3,10 @@ package com.fredy.vote.server.service.impl;
 import com.fredy.vote.api.Exception.CustomizeException;
 import com.fredy.vote.api.enums.StatusCode;
 import com.fredy.vote.model.entity.*;
-import com.fredy.vote.model.mapper.UserVoteDetailMapper;
-import com.fredy.vote.model.mapper.VoteThemeOptionExtMapper;
+import com.fredy.vote.model.mapper.*;
 import com.fredy.vote.server.dto.UserVoteDetailDto;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
-import com.fredy.vote.model.mapper.VoteThemeMapper;
-import com.fredy.vote.model.mapper.VoteThemeOptionMapper;
 import com.fredy.vote.server.enums.SysConstant;
 import com.fredy.vote.server.service.VoteThemeService;
 import com.fredy.vote.server.utils.SnowFlake;
@@ -41,6 +38,9 @@ public class VoteThemeServiceImpl implements VoteThemeService {
     private VoteThemeMapper voteThemeMapper;
 
     @Resource
+    private VoteThemeExtMapper voteThemeExtMapper;
+
+    @Resource
     private VoteThemeOptionMapper voteThemeOptionMapper;
 
     @Resource
@@ -61,6 +61,8 @@ public class VoteThemeServiceImpl implements VoteThemeService {
     public void addVoteTheme(VoteThemeDto voteThemeDto) {
         VoteTheme voteTheme = new VoteTheme();
         BeanUtils.copyProperties(voteThemeDto, voteTheme);
+
+        // TODO: 判重
 
         // 新增投票主题
         int res1 = voteThemeMapper.insertSelective(voteTheme);
@@ -101,7 +103,7 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         // 查询投票主题
         VoteThemeExample voteThemeExample = new VoteThemeExample();
         voteThemeExample.createCriteria().andIdEqualTo(id);
-        List<VoteTheme> voteThemes = voteThemeMapper.selectByExample(voteThemeExample);
+        List<VoteTheme> voteThemes = voteThemeExtMapper.selectAll(voteThemeExample);
 
         if(CollectionUtils.isEmpty(voteThemes)) {
             throw new CustomizeException(StatusCode.VOTE_THEME_NOT_EXIST);
@@ -136,9 +138,10 @@ public class VoteThemeServiceImpl implements VoteThemeService {
 
         VoteThemeExample voteThemeExample = new VoteThemeExample();
         voteThemeExample.setOrderByClause(filed + " " + direction);
+        voteThemeExample.createCriteria().andStatusEqualTo(SysConstant.VoteThemeStatus.SUCCESS.getCode());
 
         PageHelper.startPage(pageNo, pageSize);
-        List<VoteTheme> voteThemeList = voteThemeMapper.selectByExample(voteThemeExample);
+        List<VoteTheme> voteThemeList = voteThemeExtMapper.selectAll(voteThemeExample);
         PageInfo pageInfo = new PageInfo(voteThemeList);
 
         return pageInfo;
@@ -245,13 +248,19 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         BeanUtils.copyProperties(voteTheme, voteThemeDto);
         userVoteDetailDto.setVoteTheme(voteThemeDto);
 
-        // 查询所投票的选项
-        List<VoteThemeOption> voteThemeOptionList = new ArrayList<>();
-        voteDetailList.stream().forEach(e -> {
-            VoteThemeOption voteThemeOption = voteThemeOptionMapper.selectByPrimaryKey(e.getVoteThemeOptionId(), e.getVoteThemeId());
-            voteThemeOptionList.add(voteThemeOption);
-        });
+        // 查询投票主题对应所有选项的结果
+        VoteThemeOptionExample voteThemeOptionExample = new VoteThemeOptionExample();
+        voteThemeOptionExample.createCriteria()
+                .andVoteThemeIdEqualTo(voteThemeId);
+        List<VoteThemeOption> voteThemeOptionList = voteThemeOptionMapper.selectByExample(voteThemeOptionExample);
         userVoteDetailDto.setVoteThemeOptionList(voteThemeOptionList);
+
+        // 查询所投票的选项
+        List<Integer> userVoteOptionList = new ArrayList<>();
+        voteDetailList.stream().forEach(e -> {
+            userVoteOptionList.add(e.getVoteThemeOptionId());
+        });
+        userVoteDetailDto.setUserVoteOptionList(userVoteOptionList);
 
         return userVoteDetailDto;
     }

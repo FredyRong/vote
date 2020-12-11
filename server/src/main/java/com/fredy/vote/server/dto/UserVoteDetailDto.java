@@ -17,4 +17,6 @@ public class UserVoteDetailDto {
     private VoteThemeDto voteTheme;
 
     private List<VoteThemeOption> voteThemeOptionList;
+
+    private List<Integer> userVoteOptionList;
 }
