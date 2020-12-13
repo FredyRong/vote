@@ -5,3 +5,4 @@
 <link rel="stylesheet" href="${ctx}/static/plugins/bootstrap/css/bootstrap.min.css" type="text/css">
 <link rel="stylesheet" href="${ctx}/static/plugins/bootstrap/css/bootstrap-theme.min.css" type="text/css">
 <script src="${ctx}/static/plugins/jquery.js"></script>
+<script src="${ctx}/static/plugins/bootstrap/js/bootstrap.min.js"></script>

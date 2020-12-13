@@ -14,11 +14,11 @@ import java.time.format.DateTimeFormatter;
  */
 @Configuration
 public class LocalDateTimeConfig {
-    private static final String DEFAULT_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    private static final String DEFAULT_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm";
 
     @Bean
     public LocalDateTimeSerializer localDateTimeDeserializer() {
-        return new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        return new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DEFAULT_DATE_TIME_PATTERN));
     }
 
     @Bean

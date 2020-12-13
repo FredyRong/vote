@@ -14,9 +14,13 @@ public interface VoteThemeService {
 
     void addVoteTheme(VoteThemeDto voteThemeDto);
 
+    void updateVoteTheme(VoteThemeDto voteThemeDto);
+
+    void deleteVoteTheme(Integer id);
+
     VoteThemeDto getVoteTheme(Integer id);
 
-    PageInfo getVoteThemeList(Integer pageNo, Integer pageSize, String filed, String direction);
+    PageInfo getVoteThemeList(Integer pageNo, Integer pageSize, String filed, String direction, boolean allStatus);
 
     void vote(VoteDto voteDto, String ip);
 

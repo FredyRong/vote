@@ -153,10 +153,10 @@
                 success: function(res) {
                     if(res.code === 200) {
                         alert("投票成功！");
-                        window.location.href = "${ctx}/theme/user/detail/${VoteTheme.id}";
+                        window.location.href = "${ctx}/user/detail/${VoteTheme.id}";
                     } else {
                         alert(res.msg);
-                        window.location.href = "${ctx}/theme/user/detail/${VoteTheme.id}";
+                        window.location.href = "${ctx}/user/detail/${VoteTheme.id}";
                     }
                 },
                 error: function(err) {

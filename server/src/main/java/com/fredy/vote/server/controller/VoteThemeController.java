@@ -3,23 +3,19 @@ package com.fredy.vote.server.controller;
 import com.fredy.vote.api.Exception.CustomizeException;
 import com.fredy.vote.api.enums.StatusCode;
 import com.fredy.vote.api.response.BaseResponse;
-import com.fredy.vote.server.dto.UserVoteDetailDto;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
 import com.fredy.vote.server.service.VoteThemeService;
 import com.fredy.vote.server.utils.IpUtil;
-import com.github.pagehelper.PageInfo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,29 +44,52 @@ public class VoteThemeController {
             return new BaseResponse(StatusCode.INVALID_PARAMS, errors);
         }
 
+        if(dto.getStartTime().isAfter(dto.getEndTime())) {
+            return new BaseResponse(StatusCode.INVALID_PARAMS, "投票开始时间不能在结束时间之后！");
+        } else if(dto.getEndTime().isBefore(LocalDateTime.now())) {
+            return new BaseResponse(StatusCode.INVALID_PARAMS, "投票结束时间不能比当前时间还晚！");
+        }
+
         voteThemeService.addVoteTheme(dto);
 
         return new BaseResponse(StatusCode.SUCCESS);
     }
 
-    
+
     /**
-     * @Description: 获取单个投票主题信息
+     * @Description: 更新投票主题
      * @Author: Fredy
-     * @Date: 2020-11-23
+     * @Date: 2020-12-13
      */
-    @GetMapping("/{id:[1-9]\\d*}")
-    public String getVoteTheme(@PathVariable Integer id, Model model) {
-        if (id == null) {
-            throw new CustomizeException(StatusCode.INVALID_PARAMS);
+    @ResponseBody
+    @PutMapping("/update/{id:[1-9]\\d*}")
+    public BaseResponse updateVoteTheme(@PathVariable Integer id,
+                                        @Valid @RequestBody VoteThemeDto dto,
+                                        BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).collect(Collectors.toList());
+            return new BaseResponse(StatusCode.INVALID_PARAMS, errors);
         }
 
-        VoteThemeDto voteThemeDto = voteThemeService.getVoteTheme(id);
-        model.addAttribute("VoteTheme", voteThemeDto);
+        if(dto.getStartTime().isAfter(dto.getEndTime())) {
+            return new BaseResponse(StatusCode.INVALID_PARAMS, "投票开始时间不能在结束时间之后！");
+        } else if(dto.getEndTime().isBefore(LocalDateTime.now())) {
+            return new BaseResponse(StatusCode.INVALID_PARAMS, "投票结束时间不能比当前时间还晚！");
+        }
 
-        return "item";
+        dto.setId(id);
+        voteThemeService.updateVoteTheme(dto);
+
+        return new BaseResponse(StatusCode.SUCCESS);
     }
 
+    @ResponseBody
+    @DeleteMapping("/delete/{id:[1-9]\\d*}")
+    public BaseResponse deleteVoteTheme(@PathVariable Integer id) {
+        voteThemeService.deleteVoteTheme(id);
+
+        return new BaseResponse(StatusCode.SUCCESS);
+    }
 
     /**
      * @Description: 投票
@@ -96,19 +115,4 @@ public class VoteThemeController {
         return new BaseResponse(StatusCode.SUCCESS);
     }
 
-
-    /**
-     * @Description: 获取特定的用户投票详情
-     * @Author: Fredy
-     * @Date: 2020-11-30
-     */
-    @GetMapping("/user/detail/{voteThemeId:[1-9]\\d*}")
-    public String getSpecificUserVoteDetail(@PathVariable Integer voteThemeId, Model model) {
-        Integer userId = 1; // 暂时写死
-
-        UserVoteDetailDto specificUserVoteDetail = voteThemeService.getSpecificUserVoteDetail(userId, voteThemeId);
-        model.addAttribute("SpecificUserVoteDetail", specificUserVoteDetail);
-
-        return "detail";
-    }
 }
