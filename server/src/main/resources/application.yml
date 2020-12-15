@@ -84,3 +84,9 @@ mq:
 
 system:
   domain: http://localhost:8088/kill
+
+shiro:
+  encrypt:
+    password:
+      salt: 123456
+

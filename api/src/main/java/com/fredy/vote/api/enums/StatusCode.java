@@ -14,7 +14,7 @@ public enum StatusCode {
     FAIL(-1, "未知错误"),
     SYSTEM_ERROR(500, "系统错误，请联系管理员"),
     INVALID_PARAMS(501, "非法的参数！"),
-    USER_NOT_LOGIN_IN(502, "用户未登录！"),
+    USER_NOT_PERMISSION(502, "用户无权限！"),
     VOTE_THEME_ADD_FAILED(503, "添加投票主题失败！"),
     VOTE_THEME_OPTION_ADD_FAILED(504, "添加投票主题选项失败！"),
     VOTE_THEME_NOT_EXIST(505, "不存在该投票主题！"),
@@ -27,7 +27,8 @@ public enum StatusCode {
     VOTE_THEME_DUPLICATE(512, "重复的投票主题！"),
     VOTE_THEME_UPDATE_FAILED(513, "更新投票主题失败！"),
     VOTE_THEME_OPTION_UPDATE_FAILED(514, "更新投票主题选项失败！"),
-    VOTE_INVALID(515, "当前投票主题未启用！")
+    VOTE_INVALID(515, "当前投票主题未启用！"),
+    USER_LOGIN_FAILED(516, "用户登录失败！")
     ;
 
     @Getter

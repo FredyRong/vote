@@ -91,16 +91,18 @@
                             <button type="button" class="btn btn-primary" onclick="handleVote()">投票</button>
                         </c:when>
                         <c:when test="${VoteTheme.status == 2}">
-                            <button class="btn btn-danger" disabled>该投票已被管理员禁止投票</button>
+                            <button type="button"class="btn btn-danger" disabled>该投票已被管理员禁止投票</button>
                         </c:when>
                         <c:when test="${VoteTheme.status == 1}">
-                            <button class="btn btn-danger" disabled>该投票已过期</button>
+                            <button type="button"class="btn btn-danger" disabled>该投票已过期</button>
                         </c:when>
                         <c:when test="${VoteTheme.status == 0}">
-                            <button class="btn btn-danger" disabled>该投票已删除</button>
+                            <button type="button" class="btn btn-danger" disabled>该投票已删除</button>
                         </c:when>
                     </c:choose>
-
+                    <a href="${ctx}/">
+                        <button type="button" class="btn btn-info">返回首页</button>
+                    </a>
                 </div>
             </div>
         </form>

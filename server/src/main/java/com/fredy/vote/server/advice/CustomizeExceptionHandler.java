@@ -5,6 +5,7 @@ import com.fredy.vote.api.enums.StatusCode;
 import com.fredy.vote.api.response.BaseResponse;
 import com.google.gson.Gson;
 import lombok.extern.log4j.Log4j2;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -59,11 +60,16 @@ public class CustomizeExceptionHandler {
 
             if(ex instanceof CustomizeException) {
                 model.addAttribute("message", ((CustomizeException) ex).getMsg());
+                return new ModelAndView("error");
+            } else if(ex instanceof UnauthorizedException) {
+                model.addAttribute("message", StatusCode.USER_NOT_PERMISSION.getMsg());
+                return new ModelAndView("unauth");
             } else {
-                model.addAttribute("message,", StatusCode.SYSTEM_ERROR.getMsg());
+                model.addAttribute("message", StatusCode.SYSTEM_ERROR.getMsg());
+                return new ModelAndView("error");
             }
 
-            return new ModelAndView("error");
+
         }
     }
 

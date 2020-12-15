@@ -8,6 +8,8 @@ import com.fredy.vote.server.service.VoteThemeService;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Fredy
@@ -34,7 +36,7 @@ public class ViewController {
      * @Author: Fredy
      * @Date: 2020-11-24
      */
-    @GetMapping({"/", "/list"})
+    @GetMapping({"/", "index", "/list"})
     public String getVoteThemeList(@RequestParam(defaultValue = "1") Integer pageNo,
                                    @RequestParam(defaultValue = "5") Integer pageSize,
                                    @RequestParam(defaultValue = "update_time") String filed,
@@ -84,10 +86,33 @@ public class ViewController {
 
 
     /**
+     * @Description: 去登录页面
+     * @Author: Fredy
+     * @Date: 2020-12-15
+     */
+    @GetMapping({"/login", "/unauth"})
+    public String toLogin() {
+        return "login";
+    }
+
+
+    /**
+     * @Description: 退出登录
+     * @Author: Fredy
+     * @Date: 2020-12-15
+     */
+    @GetMapping("/logout")
+    public String toLogout() {
+        SecurityUtils.getSubject().logout();
+        return "login";
+    }
+
+    /**
      * @Description: 获取全部投票主题list(admin)
      * @Author: Fredy
      * @Date: 2020-12-13
      */
+    @RequiresPermissions("theme:list")
     @GetMapping({"/admin", "/admin/list"})
     public String getAdminVoteThemeList(@RequestParam(defaultValue = "1") Integer pageNo,
                                    @RequestParam(defaultValue = "5") Integer pageSize,
@@ -105,18 +130,25 @@ public class ViewController {
     }
 
     /**
-     * @Description: 跳转添加投票主题
+     * @Description: 跳转添加投票主题(admin)
      * @Author: Fredy
      * @Date: 2020-12-12
      */
+    @RequiresPermissions("theme:add")
     @GetMapping("/admin/add")
-    public String add() {
+    public String addVoteTheme() {
         return "add";
     }
 
 
+    /**
+     * @Description: 跳转更新投票主题(admin)
+     * @Author: Fredy
+     * @Date: 2020-12-14
+     */
+    @RequiresPermissions("theme:update")
     @GetMapping("/admin/update/{id:[1-9]\\d*}")
-    public String update(@PathVariable Integer id, Model model) {
+    public String updateVoteTheme(@PathVariable Integer id, Model model) {
         VoteThemeDto voteTheme = voteThemeService.getVoteTheme(id);
 
         model.addAttribute("VoteTheme", voteTheme);

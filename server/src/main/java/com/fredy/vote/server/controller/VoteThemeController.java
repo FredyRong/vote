@@ -5,9 +5,11 @@ import com.fredy.vote.api.enums.StatusCode;
 import com.fredy.vote.api.response.BaseResponse;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
+import com.fredy.vote.server.enums.SysConstant;
 import com.fredy.vote.server.service.VoteThemeService;
 import com.fredy.vote.server.utils.IpUtil;
 import lombok.extern.log4j.Log4j2;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +38,7 @@ public class VoteThemeController {
      * @Author: Fredy
      * @Date: 2020-11-23
      */
+    @RequiresPermissions("theme:add")
     @ResponseBody
     @PostMapping("/add")
     public BaseResponse addVoteTheme(@Valid @RequestBody VoteThemeDto dto, BindingResult bindingResult) {
@@ -46,7 +49,7 @@ public class VoteThemeController {
 
         if(dto.getStartTime().isAfter(dto.getEndTime())) {
             return new BaseResponse(StatusCode.INVALID_PARAMS, "投票开始时间不能在结束时间之后！");
-        } else if(dto.getEndTime().isBefore(LocalDateTime.now())) {
+        } else if(dto.getStatus() == SysConstant.VoteThemeStatus.SUCCESS.getCode() && dto.getEndTime().isBefore(LocalDateTime.now())) {
             return new BaseResponse(StatusCode.INVALID_PARAMS, "投票结束时间不能比当前时间还晚！");
         }
 
@@ -61,6 +64,7 @@ public class VoteThemeController {
      * @Author: Fredy
      * @Date: 2020-12-13
      */
+    @RequiresPermissions("theme:update")
     @ResponseBody
     @PutMapping("/update/{id:[1-9]\\d*}")
     public BaseResponse updateVoteTheme(@PathVariable Integer id,
@@ -73,7 +77,7 @@ public class VoteThemeController {
 
         if(dto.getStartTime().isAfter(dto.getEndTime())) {
             return new BaseResponse(StatusCode.INVALID_PARAMS, "投票开始时间不能在结束时间之后！");
-        } else if(dto.getEndTime().isBefore(LocalDateTime.now())) {
+        } else if(dto.getStatus() == SysConstant.VoteThemeStatus.SUCCESS.getCode() && dto.getEndTime().isBefore(LocalDateTime.now())) {
             return new BaseResponse(StatusCode.INVALID_PARAMS, "投票结束时间不能比当前时间还晚！");
         }
 
@@ -83,6 +87,13 @@ public class VoteThemeController {
         return new BaseResponse(StatusCode.SUCCESS);
     }
 
+
+    /**
+     * @Description: 删除投票主题
+     * @Author: Fredy
+     * @Date: 2020-12-15
+     */
+    @RequiresPermissions("theme:delete")
     @ResponseBody
     @DeleteMapping("/delete/{id:[1-9]\\d*}")
     public BaseResponse deleteVoteTheme(@PathVariable Integer id) {
