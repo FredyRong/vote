@@ -75,15 +75,19 @@ mq:
         queue: ${mq.env}.vote.success.email.queue
         exchange: ${mq.env}.vote.success.email.exchange
         routing-key: ${mq.env}.vote.success.email.routing-key
-        expire: 180000
 
     dead:
-        queue: ${mq.env}.vote.success.dead.queue
-        exchange: ${mq.env}.vote.success.dead.exchange
-        routing-key: ${mq.env}.vote.success.dead.routing-key
+      queue: ${mq.env}.vote.success.dead.queue
+      exchange: ${mq.env}.vote.success.dead.exchange
+      routing-key: ${mq.env}.vote.success.dead.routing-key
+      real:
+        queue: ${mq.env}.vote.success.dead.real.queue
+      prod:
+        exchange: ${mq.env}.vote.success.dead.prod.exchange
+        routing-key: ${mq.env}.vote.success.dead.prod.routing-key
 
 system:
-  domain: http://localhost:8088/kill
+  domain: http://localhost:8089/vote
 
 shiro:
   encrypt:

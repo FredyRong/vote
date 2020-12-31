@@ -109,7 +109,7 @@ public class VoteThemeController {
      */
     @ResponseBody
     @PostMapping("/vote")
-    public BaseResponse vote(@Valid @RequestBody VoteDto voteDto, BindingResult bindingResult, HttpServletRequest request) {
+    public BaseResponse vote(@Valid @RequestBody VoteDto voteDto, BindingResult bindingResult, HttpServletRequest request) throws Exception {
         if (bindingResult.hasErrors()) {
             List<String> errors = bindingResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).collect(Collectors.toList());
             return new BaseResponse(StatusCode.INVALID_PARAMS, errors);

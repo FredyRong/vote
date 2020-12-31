@@ -68,8 +68,6 @@ public class CustomizeExceptionHandler {
                 model.addAttribute("message", StatusCode.SYSTEM_ERROR.getMsg());
                 return new ModelAndView("error");
             }
-
-
         }
     }
 

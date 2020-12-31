@@ -47,7 +47,7 @@
                     <div class="form-group">
                         <label for="startTime">投票开始时间</label>
                         <div class="input-group date" id="datetimepicker1">
-                            <input type="text" class="form-control" id="startTime" name="startTime" readonly value="${VoteTheme.startTime}">
+                            <input type="text" class="form-control" id="startTime" name="startTime" value="${VoteTheme.startTime}">
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>
@@ -59,7 +59,7 @@
                     <div class="form-group">
                         <label for="endTime">投票结束时间</label>
                         <div class="input-group date" id="datetimepicker2">
-                            <input type="text" class="form-control" id="endTime" name="endTime" readonly value="${VoteTheme.endTime}">
+                            <input type="text" class="form-control" id="endTime" name="endTime" value="${VoteTheme.endTime}">
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>

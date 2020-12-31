@@ -22,7 +22,7 @@ public interface VoteThemeService {
 
     PageInfo getVoteThemeList(Integer pageNo, Integer pageSize, String filed, String direction, boolean allStatus);
 
-    void vote(VoteDto voteDto, String ip);
+    void vote(VoteDto voteDto, String ip) throws Exception;
 
     UserVoteDetailDto getSpecificUserVoteDetail(Integer userId, Integer voteThemeId);
 }

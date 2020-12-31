@@ -8,11 +8,14 @@ import com.fredy.vote.server.dto.UserVoteDetailDto;
 import com.fredy.vote.server.dto.VoteDto;
 import com.fredy.vote.server.dto.VoteThemeDto;
 import com.fredy.vote.server.enums.SysConstant;
+import com.fredy.vote.server.service.RabbitSenderService;
 import com.fredy.vote.server.service.VoteThemeService;
 import com.fredy.vote.server.utils.SnowFlake;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.log4j.Log4j2;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Fredy
@@ -33,7 +37,7 @@ import java.util.Map;
 @Log4j2
 public class VoteThemeServiceImpl implements VoteThemeService {
 
-    private SnowFlake snowFlake = new SnowFlake(2, 3);
+    private final SnowFlake snowFlake = new SnowFlake(2, 3);
 
     @Resource
     private VoteThemeMapper voteThemeMapper;
@@ -50,7 +54,8 @@ public class VoteThemeServiceImpl implements VoteThemeService {
     @Resource
     private UserVoteDetailMapper userVoteDetailMapper;
 
-
+    @Resource
+    private RabbitSenderService rabbitSenderService;
 
     /**
      * @Description: 添加投票主题(以及对应选项)
@@ -79,22 +84,22 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         }
 
         // 新增投票主题对应的选项
-        voteThemeDto.getOptions().entrySet().stream()
-            .forEach(e -> {
-                VoteThemeOption voteThemeOption = new VoteThemeOption();
-                voteThemeOption.setVoteThemeId(voteTheme.getId());
-                try {
-                    voteThemeOption.setValue(Integer.valueOf(e.getKey()));
-                } catch(Exception ex) {
-                    throw ex;
-                }
-                voteThemeOption.setLabel(e.getValue());
+        voteThemeDto.getOptions().forEach((key, value) -> {
+            VoteThemeOption voteThemeOption = new VoteThemeOption();
+            voteThemeOption.setVoteThemeId(voteTheme.getId());
+            voteThemeOption.setValue(Integer.valueOf(key));
+            voteThemeOption.setLabel(value);
 
-                int res2 = voteThemeOptionMapper.insertSelective(voteThemeOption);
-                if(res2 != 1) {
-                    throw new CustomizeException(StatusCode.VOTE_THEME_OPTION_ADD_FAILED);
-                }
-            });
+            int res2 = voteThemeOptionMapper.insertSelective(voteThemeOption);
+            if (res2 != 1) {
+                throw new CustomizeException(StatusCode.VOTE_THEME_OPTION_ADD_FAILED);
+            }
+        });
+
+        if(voteThemeDto.getStatus() == SysConstant.VoteThemeStatus.SUCCESS.getCode()) {
+            rabbitSenderService.sendVoteThemeExpire(voteThemeDto.getId());
+        }
+
     }
 
 
@@ -125,26 +130,21 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         int size = voteThemeDto.getOptions().size();
         if(count < size) {
             // 更新旧的
-            voteThemeDto.getOptions().entrySet().stream()
-                    .forEach(e -> {
-                        VoteThemeOption voteThemeOption = new VoteThemeOption();
-                        voteThemeOption.setLabel(e.getValue());
-                        voteThemeOption.setUpdateTime(LocalDateTime.now());
+            voteThemeDto.getOptions().forEach((key, value) -> {
+                VoteThemeOption voteThemeOption = new VoteThemeOption();
+                voteThemeOption.setLabel(value);
+                voteThemeOption.setUpdateTime(LocalDateTime.now());
 
-                        VoteThemeOptionExample voteThemeOptionExample1 = new VoteThemeOptionExample();
-                        try {
-                            voteThemeOptionExample1.createCriteria()
-                                    .andVoteThemeIdEqualTo(voteTheme.getId())
-                                    .andValueEqualTo(Integer.valueOf(e.getKey()));
-                        } catch (Exception ex) {
-                            throw ex;
-                        }
+                VoteThemeOptionExample voteThemeOptionExample1 = new VoteThemeOptionExample();
+                voteThemeOptionExample1.createCriteria()
+                        .andVoteThemeIdEqualTo(voteTheme.getId())
+                        .andValueEqualTo(Integer.valueOf(key));
 
-                        int res2 = voteThemeOptionMapper.updateByExampleSelective(voteThemeOption, voteThemeOptionExample1);
-                        if(res2 != 1) {
-                            throw new CustomizeException(StatusCode.VOTE_THEME_UPDATE_FAILED);
-                        }
-                    });
+                int res2 = voteThemeOptionMapper.updateByExampleSelective(voteThemeOption, voteThemeOptionExample1);
+                if (res2 != 1) {
+                    throw new CustomizeException(StatusCode.VOTE_THEME_UPDATE_FAILED);
+                }
+            });
 
             // 删除多余的
             for(int i = size+1; size <= count; i++) {
@@ -158,39 +158,38 @@ public class VoteThemeServiceImpl implements VoteThemeService {
                 }
             }
         } else {
-            voteThemeDto.getOptions().entrySet().stream()
-                    .forEach(e -> {
-                        VoteThemeOption voteThemeOption = new VoteThemeOption();
-                        voteThemeOption.setLabel(e.getValue());
+            voteThemeDto.getOptions().forEach((key, value1) -> {
+                VoteThemeOption voteThemeOption = new VoteThemeOption();
+                voteThemeOption.setLabel(value1);
 
-                        Integer value;
-                        try {
-                            value = Integer.valueOf(e.getKey());
-                        } catch (Exception ex) {
-                            throw ex;
-                        }
+                int value;
+                value = Integer.parseInt(key);
 
-                        int res4 = 0;
-                        if(value > count) {
-                            // 新的增加
-                            voteThemeOption.setValue(value);
-                            res4 = voteThemeOptionMapper.insertSelective(voteThemeOption);
-                            if(res4 != 1) {
-                                throw new CustomizeException(StatusCode.VOTE_THEME_OPTION_ADD_FAILED);
-                            }
-                        } else {
-                            // 旧的更新
-                            VoteThemeOptionExample voteThemeOptionExample1 = new VoteThemeOptionExample();
-                            voteThemeOptionExample1.createCriteria()
-                                    .andVoteThemeIdEqualTo(voteTheme.getId())
-                                    .andValueEqualTo(value);
+                int res4;
+                if (value > count) {
+                    // 新的增加
+                    voteThemeOption.setValue(value);
+                    res4 = voteThemeOptionMapper.insertSelective(voteThemeOption);
+                    if (res4 != 1) {
+                        throw new CustomizeException(StatusCode.VOTE_THEME_OPTION_ADD_FAILED);
+                    }
+                } else {
+                    // 旧的更新
+                    VoteThemeOptionExample voteThemeOptionExample1 = new VoteThemeOptionExample();
+                    voteThemeOptionExample1.createCriteria()
+                            .andVoteThemeIdEqualTo(voteTheme.getId())
+                            .andValueEqualTo(value);
 
-                            res4 = voteThemeOptionMapper.updateByExampleSelective(voteThemeOption, voteThemeOptionExample1);
-                            if(res4 != 1) {
-                                throw new CustomizeException(StatusCode.VOTE_THEME_UPDATE_FAILED);
-                            }
-                        }
-                    });
+                    res4 = voteThemeOptionMapper.updateByExampleSelective(voteThemeOption, voteThemeOptionExample1);
+                    if (res4 != 1) {
+                        throw new CustomizeException(StatusCode.VOTE_THEME_UPDATE_FAILED);
+                    }
+                }
+            });
+        }
+
+        if(voteThemeDto.getStatus() == SysConstant.VoteThemeStatus.SUCCESS.getCode()) {
+            rabbitSenderService.sendVoteThemeExpire(voteThemeDto.getId());
         }
     }
 
@@ -239,7 +238,7 @@ public class VoteThemeServiceImpl implements VoteThemeService {
 
         Map<String, String> options = new HashMap<>();
         Map<String, Long> voteNumbers = new HashMap<>();
-        voteThemeOptionList.stream().forEach(e -> {
+        voteThemeOptionList.forEach(e -> {
             options.put(String.valueOf(e.getValue()), e.getLabel());
             voteNumbers.put(String.valueOf(e.getValue()), e.getTotal());
         });
@@ -270,6 +269,8 @@ public class VoteThemeServiceImpl implements VoteThemeService {
 
     }
 
+    @Resource
+    private RedissonClient redissonClient;
 
     /**
      * @Description: 投票
@@ -278,19 +279,72 @@ public class VoteThemeServiceImpl implements VoteThemeService {
      */
     @Override
     @Transactional
-    public void vote(VoteDto voteDto, String ip) {
+    public void vote(VoteDto voteDto, String ip) throws Exception {
         VoteTheme voteTheme = voteThemeMapper.selectByPrimaryKey(voteDto.getVoteThemeId());
 
         // 判断所投票选项是否符合单选
-        if(voteTheme.getSelectType() == SysConstant.VoteThemeSelectType.SELECT.getCode() && voteDto.getOptionValue().size() != 1) {
+        if(voteTheme.getSelectType().equals(SysConstant.VoteThemeSelectType.SELECT.getCode()) && voteDto.getOptionValue().size() != 1) {
             throw new CustomizeException(StatusCode.INVALID_PARAMS);
         }
 
         // 判断是否能投票
-        if(voteTheme.getStatus() != SysConstant.VoteThemeStatus.SUCCESS.getCode()) {
+        if(!voteTheme.getStatus().equals(SysConstant.VoteThemeStatus.SUCCESS.getCode())) {
             throw new CustomizeException(StatusCode.VOTE_INVALID);
         }
 
+        // 判断选项是否存在
+        VoteThemeOptionExample voteThemeOptionExample = new VoteThemeOptionExample();
+        voteThemeOptionExample.createCriteria()
+                .andVoteThemeIdEqualTo(voteDto.getVoteThemeId())
+                .andValueIn(voteDto.getOptionValue());
+        List<VoteThemeOption> voteThemeOptionList = voteThemeOptionMapper.selectByExample(voteThemeOptionExample);
+        if(voteThemeOptionList.size() != voteDto.getOptionValue().size()) {
+            throw new CustomizeException(StatusCode.VOTE_THEME_OPTION_NOT_EXIST);
+        }
+
+        // 判断是否重复投票
+        if(!validateVote(voteDto, ip)) {
+            throw new CustomizeException(StatusCode.VOTE_DUPLICATE);
+        }
+
+        final String lockKey = String.valueOf(voteDto.getVoteThemeId()) + voteDto.getUserId() + "-RedissonLock";
+        RLock lock = redissonClient.getLock(lockKey);
+
+        try {
+            boolean cacheRes = lock.tryLock(30, 10, TimeUnit.SECONDS);
+            if(cacheRes) {
+                // 再次判断是否重复投票
+                if(!validateVote(voteDto, ip)) {
+                    throw new CustomizeException(StatusCode.VOTE_DUPLICATE);
+                }
+
+                // 投票详情入库
+                voteThemeOptionList.forEach(e -> {
+                    // 插入详情
+                    UserVoteDetail userVoteDetail = new UserVoteDetail();
+                    userVoteDetail.setUserId(voteDto.getUserId());
+                    userVoteDetail.setVoteThemeId(voteDto.getVoteThemeId());
+                    userVoteDetail.setId(String.valueOf(snowFlake.nextId()));
+                    userVoteDetail.setIp(ip);
+                    userVoteDetail.setVoteThemeOptionId(e.getId());
+                    int res = userVoteDetailMapper.insertSelective(userVoteDetail);
+                    if(res != 1) {
+                        throw new CustomizeException(StatusCode.USER_VOTE_DETAIL_ADD_FAILED);
+                    }
+
+                    // 选项投票数+1
+                    res = voteThemeOptionExtMapper.addVoteOptionTotal(e);
+                    if(res != 1) {
+                        throw new CustomizeException(StatusCode.VOTE_FAILED);
+                    }
+                });
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private boolean validateVote(VoteDto voteDto, String ip) {
         List<UserVoteDetail> userVoteDetailList = null;
 
         // 判断用户是否重复投票
@@ -301,7 +355,7 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         userVoteDetailList = userVoteDetailMapper.selectByExample(userVoteDetailExample);
 
         if(userVoteDetailList.size() > 0) {
-            throw new CustomizeException(StatusCode.VOTE_DUPLICATE);
+            return false;
         }
 
         // 判断ip是否重复投票
@@ -312,40 +366,10 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         userVoteDetailList = userVoteDetailMapper.selectByExample(userVoteDetailExample);
 
         if(userVoteDetailList.size() > 0) {
-            throw new CustomizeException(StatusCode.VOTE_DUPLICATE);
+            return false;
         }
 
-        // 投票详情入库
-        voteDto.getOptionValue().stream().forEach(e -> {
-            VoteThemeOptionExample voteThemeOptionExample = new VoteThemeOptionExample();
-            voteThemeOptionExample.createCriteria()
-                    .andVoteThemeIdEqualTo(voteDto.getVoteThemeId())
-                    .andValueEqualTo(e);
-            List<VoteThemeOption> voteThemeOptionList = voteThemeOptionMapper.selectByExample(voteThemeOptionExample);
-
-            if(voteThemeOptionList.size() <= 0) {
-                throw new CustomizeException(StatusCode.VOTE_THEME_OPTION_NOT_EXIST);
-            }
-
-            VoteThemeOption voteThemeOption = voteThemeOptionList.get(0);
-            // 插入详情
-            UserVoteDetail userVoteDetail = new UserVoteDetail();
-            userVoteDetail.setUserId(voteDto.getUserId());
-            userVoteDetail.setVoteThemeId(voteDto.getVoteThemeId());
-            userVoteDetail.setId(String.valueOf(snowFlake.nextId()));
-            userVoteDetail.setIp(ip);
-            userVoteDetail.setVoteThemeOptionId(voteThemeOption.getId());
-            int res = userVoteDetailMapper.insertSelective(userVoteDetail);
-            if(res != 1) {
-                throw new CustomizeException(StatusCode.USER_VOTE_DETAIL_ADD_FAILED);
-            }
-
-            // 选项投票数+1
-            res = voteThemeOptionExtMapper.addVoteOptionTotal(voteThemeOption);
-            if(res != 1) {
-                throw new CustomizeException(StatusCode.VOTE_FAILED);
-            }
-        });
+        return true;
     }
 
 
@@ -384,9 +408,7 @@ public class VoteThemeServiceImpl implements VoteThemeService {
 
         // 查询所投票的选项
         List<Integer> userVoteOptionList = new ArrayList<>();
-        voteDetailList.stream().forEach(e -> {
-            userVoteOptionList.add(e.getVoteThemeOptionId());
-        });
+        voteDetailList.forEach(e -> userVoteOptionList.add(e.getVoteThemeOptionId()));
         userVoteDetailDto.setUserVoteOptionList(userVoteOptionList);
 
         return userVoteDetailDto;
