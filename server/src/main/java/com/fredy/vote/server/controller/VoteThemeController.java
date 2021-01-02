@@ -122,6 +122,7 @@ public class VoteThemeController {
             throw new CustomizeException(StatusCode.IP_FAILED);
         }
         voteThemeService.vote(voteDto, ip);
+//        voteThemeService.vote(voteDto, voteDto.getIp());
 
         return new BaseResponse(StatusCode.SUCCESS);
     }

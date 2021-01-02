@@ -97,7 +97,7 @@ public class VoteThemeServiceImpl implements VoteThemeService {
         });
 
         if(voteThemeDto.getStatus() == SysConstant.VoteThemeStatus.SUCCESS.getCode()) {
-            rabbitSenderService.sendVoteThemeExpire(voteThemeDto.getId());
+            rabbitSenderService.sendVoteThemeExpire(voteTheme.getId());
         }
 
     }

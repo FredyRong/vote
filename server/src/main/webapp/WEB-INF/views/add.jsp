@@ -45,7 +45,7 @@
                     <div class="form-group">
                         <label for="startTime">投票开始时间</label>
                         <div class="input-group date" id="datetimepicker1">
-                            <input type="text" class="form-control" id="startTime" name="startTime" readonly>
+                            <input type="text" class="form-control" id="startTime" name="startTime">
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>
@@ -57,7 +57,7 @@
                     <div class="form-group">
                         <label for="endTime">投票结束时间</label>
                         <div class="input-group date" id="datetimepicker2">
-                            <input type="text" class="form-control" id="endTime" name="endTime" readonly>
+                            <input type="text" class="form-control" id="endTime" name="endTime">
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>

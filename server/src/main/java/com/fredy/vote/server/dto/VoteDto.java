@@ -20,4 +20,6 @@ public class VoteDto {
 
     @NotNull(message = "投票选项值不能为空！")
     private List<Integer> optionValue;
+
+    private String ip;
 }
